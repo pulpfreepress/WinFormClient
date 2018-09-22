@@ -145,8 +145,8 @@ namespace WinFormClient
                 }
             }catch(Exception ex)
             {
-                _statusTextBox.InvokeEx(stb => stb.Text += CRLF + "Problem communicating with the server.");
-                _statusTextBox.InvokeEx(stb => stb.Text += CRLF + ex.ToString());
+                _statusTextBox.InvokeEx(stb => stb.Text += CRLF + "Problem communicating with the server. Connection may have been intentionally disconnected.");
+               // _statusTextBox.InvokeEx(stb => stb.Text += CRLF + ex.ToString());
             }
 
             _disconnectButton.InvokeEx(dcb => dcb.Enabled = false);
