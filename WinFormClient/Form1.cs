@@ -48,6 +48,8 @@ namespace WinFormClient
         {
             try
             {
+                _serverIpAddress = GetIpAddress(_ipAddressTextBox.Text);
+                _port = GetPort(_portTextBox.Text);
 
                 _client = new TcpClient(_serverIpAddress.ToString(), _port);
                 Thread t = new Thread(ProcessClientTransactions);
@@ -81,11 +83,14 @@ namespace WinFormClient
         {
             try
             {
-                StreamWriter writer = new StreamWriter(_client.GetStream());
-                writer.WriteLine(_commandTextBox.Text);
-                writer.Flush();
-                _statusTextBox.Text += CRLF + "Command Sent to Server: " + _commandTextBox.Text;
-                _commandTextBox.Text = string.Empty;
+                if (_client.Connected)
+                {
+                    StreamWriter writer = new StreamWriter(_client.GetStream());
+                    writer.WriteLine(_commandTextBox.Text);
+                    writer.Flush();
+                    _statusTextBox.Text += CRLF + "Command Sent to Server: " + _commandTextBox.Text;
+                    _commandTextBox.Text = string.Empty;
+                }
 
             }
             catch (Exception ex)
@@ -122,7 +127,7 @@ namespace WinFormClient
 
                 while (client.Connected)
                 {
-                    input = reader.ReadLine();
+                    input = reader.ReadLine(); // block here until we receive something from the server.
                     if (input == null)
                     {
                         DisconnectFromServer();
@@ -151,7 +156,9 @@ namespace WinFormClient
 
             _disconnectButton.InvokeEx(dcb => dcb.Enabled = false);
             _connectButton.InvokeEx(cb => cb.Enabled = true);
-            
+            _statusTextBox.InvokeEx(stb => stb.Text = string.Empty);
+
+
         }
 
 
@@ -172,6 +179,8 @@ namespace WinFormClient
                 _statusTextBox.InvokeEx(stb => stb.Text += CRLF + "Problem disconnecting from the server.");
                 _statusTextBox.InvokeEx(stb => stb.Text += CRLF + ex.ToString());
             }
+
+            _statusTextBox.InvokeEx(stb => stb.Text = string.Empty);
 
         }
 
@@ -203,13 +212,13 @@ namespace WinFormClient
         private int GetPort(string serverPort)
         {
 
-            int port = 5000;
+            int port = DEFAULT_PORT;
 
             try
             {
                 if(!Int32.TryParse(serverPort, out port))
                 {
-                    port = 5000;
+                    port = DEFAULT_PORT;
                 }
             }catch(Exception ex)
             {
